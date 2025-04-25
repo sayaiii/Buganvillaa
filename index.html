@@ -549,7 +549,7 @@
                     required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition text-base sm:text-lg"
                   >
-                    <option value="" disabled selected>Pilih produk</option>
+                    <option value="" disabled>Pilih produk</option>
                   </select>
                 </div>
                 <div>
@@ -1259,6 +1259,7 @@
             </button>
           </td>
         `;
+        tr.dataset.productId = product.id;
         produkList.appendChild(tr);
       });
     }
@@ -1467,6 +1468,10 @@
 
     // Edit product (simple prompt demo)
     window.editProduct = function (id) {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk mengedit produk.");
+        return;
+      }
       const product = products.find((p) => p.id === id);
       if (product) {
         const newName = prompt("Edit Nama Produk:", product.name);
@@ -1480,6 +1485,10 @@
 
     // Delete product
     window.deleteProduct = function (id) {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk menghapus produk.");
+        return;
+      }
       if (confirm("Apakah Anda yakin ingin menghapus produk ini?")) {
         products = products.filter((p) => p.id !== id);
         saveDB(LS_PRODUCTS, products);
@@ -1490,6 +1499,10 @@
 
     // Edit order (simple prompt demo)
     window.editOrder = function (id) {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk mengedit pesanan.");
+        return;
+      }
       const order = orders.find((o) => o.id === id);
       if (order) {
         const newStatus = prompt(
@@ -1509,6 +1522,10 @@
 
     // Delete order
     window.deleteOrder = function (id) {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk menghapus pesanan.");
+        return;
+      }
       if (confirm("Apakah Anda yakin ingin menghapus pesanan ini?")) {
         orders = orders.filter((o) => o.id !== id);
         saveDB(LS_ORDERS, orders);
@@ -1519,6 +1536,10 @@
 
     // Delete user (for master/admin accounts)
     window.deleteUser = function (username) {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk menghapus akun.");
+        return;
+      }
       if (confirm(`Apakah Anda yakin ingin menghapus akun ${username}?`)) {
         users = users.filter((u) => u.username !== username);
         saveDB(LS_USERS, users);
@@ -1545,6 +1566,10 @@
 
     // Open modal for adding new customer
     btnTambahPelanggan.addEventListener("click", () => {
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk menambah pelanggan.");
+        return;
+      }
       editingCustomerIndex = -1;
       customerForm.reset();
       customerModal.classList.remove("hidden");
@@ -1560,6 +1585,10 @@
 
     // Open modal for editing existing customer
     window.openEditCustomer = function (index) {
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk mengedit pelanggan.");
+        return;
+      }
       const customer = customers[index];
       if (!customer) return;
       editingCustomerIndex = index;
@@ -1572,6 +1601,10 @@
 
     // Delete customer
     window.deleteCustomer = function (index) {
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk menghapus pelanggan.");
+        return;
+      }
       if (index < 0 || index >= customers.length) return;
       if (confirm(`Apakah Anda yakin ingin menghapus pelanggan ${customers[index].name}?`)) {
         customers.splice(index, 1);
@@ -1584,6 +1617,10 @@
     // Handle customer form submit
     customerForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk menyimpan pelanggan.");
+        return;
+      }
       const name = customerNameInput.value.trim();
       const email = customerEmailInput.value.trim();
       const phone = customerPhoneInput.value.trim();
@@ -1619,6 +1656,8 @@
       updateSummary();
       showSection(dashboardContent);
       setupNavigation();
+      updateMenuByRole(currentUser.role);
+      updateUIByRole(currentUser.role);
     }
 
     // Show/hide menu items based on role
@@ -1629,16 +1668,109 @@
         menuAkunAdmin.classList.remove("hidden");
         mobileMenuAkunMaster.classList.remove("hidden");
         mobileMenuAkunAdmin.classList.remove("hidden");
+        navProduk.classList.remove("hidden");
+        navPesanan.classList.remove("hidden");
+        navPelanggan.classList.remove("hidden");
+        navLaporan.classList.remove("hidden");
+        navDashboard.classList.remove("hidden");
+        mobileNavProduk.classList.remove("hidden");
+        mobileNavPesanan.classList.remove("hidden");
+        mobileNavPelanggan.classList.remove("hidden");
+        mobileNavLaporan.classList.remove("hidden");
+        mobileNavDashboard.classList.remove("hidden");
       } else if (role === "Admin") {
         menuAkunMaster.classList.add("hidden");
-        menuAkunAdmin.classList.remove("hidden");
+        menuAkunAdmin.classList.add("hidden");
         mobileMenuAkunMaster.classList.add("hidden");
-        mobileMenuAkunAdmin.classList.remove("hidden");
+        mobileMenuAkunAdmin.classList.add("hidden");
+        navProduk.classList.add("hidden");
+        navPesanan.classList.remove("hidden");
+        navPelanggan.classList.remove("hidden");
+        navLaporan.classList.add("hidden");
+        navDashboard.classList.remove("hidden");
+        mobileNavProduk.classList.add("hidden");
+        mobileNavPesanan.classList.remove("hidden");
+        mobileNavPelanggan.classList.remove("hidden");
+        mobileNavLaporan.classList.add("hidden");
+        mobileNavDashboard.classList.remove("hidden");
       } else {
         menuAkunMaster.classList.add("hidden");
         menuAkunAdmin.classList.add("hidden");
         mobileMenuAkunMaster.classList.add("hidden");
         mobileMenuAkunAdmin.classList.add("hidden");
+        navProduk.classList.add("hidden");
+        navPesanan.classList.add("hidden");
+        navPelanggan.classList.add("hidden");
+        navLaporan.classList.add("hidden");
+        navDashboard.classList.remove("hidden");
+        mobileNavProduk.classList.add("hidden");
+        mobileNavPesanan.classList.add("hidden");
+        mobileNavPelanggan.classList.add("hidden");
+        mobileNavLaporan.classList.add("hidden");
+        mobileNavDashboard.classList.remove("hidden");
+      }
+    }
+
+    // Update UI elements (buttons, actions) based on role
+    function updateUIByRole(role) {
+      // Produk Section buttons and actions
+      const btnTambahProduk = document.getElementById("btn-tambah-produk");
+      const btnTambahProduk2 = document.getElementById("btn-tambah-produk-2");
+      if (role === "Master") {
+        btnTambahProduk.classList.remove("hidden");
+        btnTambahProduk2.classList.remove("hidden");
+        produkList.querySelectorAll("button").forEach((btn) => btn.disabled = false);
+      } else {
+        btnTambahProduk.classList.add("hidden");
+        btnTambahProduk2.classList.add("hidden");
+        produkList.querySelectorAll("button").forEach((btn) => btn.disabled = true);
+      }
+
+      // Pesanan Section buttons and actions
+      const btnBuatPesanan = document.getElementById("btn-buat-pesanan");
+      if (role === "Master" || role === "Admin") {
+        btnBuatPesanan.classList.remove("hidden");
+        pesananList.querySelectorAll("button").forEach((btn) => {
+          btn.disabled = role !== "Master"; // Only Master can edit/delete orders
+        });
+      } else {
+        btnBuatPesanan.classList.add("hidden");
+        pesananList.querySelectorAll("button").forEach((btn) => btn.disabled = true);
+      }
+
+      // Pelanggan Section buttons and actions
+      const btnTambahPelanggan = document.getElementById("btn-tambah-pelanggan");
+      if (role === "Master" || role === "Admin") {
+        btnTambahPelanggan.classList.remove("hidden");
+        pelangganList.querySelectorAll("button").forEach((btn) => {
+          btn.disabled = role !== "Master"; // Only Master can edit/delete customers
+        });
+      } else {
+        btnTambahPelanggan.classList.add("hidden");
+        pelangganList.querySelectorAll("button").forEach((btn) => btn.disabled = true);
+      }
+
+      // Laporan Section
+      if (role === "Master") {
+        // Show laporan nav and section
+        navLaporan.classList.remove("hidden");
+        mobileNavLaporan.classList.remove("hidden");
+      } else {
+        navLaporan.classList.add("hidden");
+        mobileNavLaporan.classList.add("hidden");
+      }
+
+      // Akun Master and Admin Sections
+      if (role === "Master") {
+        navAkunMaster.classList.remove("hidden");
+        navAkunAdmin.classList.remove("hidden");
+        mobileNavAkunMaster.classList.remove("hidden");
+        mobileNavAkunAdmin.classList.remove("hidden");
+      } else {
+        navAkunMaster.classList.add("hidden");
+        navAkunAdmin.classList.add("hidden");
+        mobileNavAkunMaster.classList.add("hidden");
+        mobileNavAkunAdmin.classList.add("hidden");
       }
     }
 
@@ -1656,7 +1788,6 @@
         currentUser = user;
         loginSection.classList.add("hidden");
         dashboardSection.classList.remove("hidden");
-        updateMenuByRole(user.role);
         initApp();
         loginForm.reset();
       } else {
@@ -1698,6 +1829,10 @@
 
     // Show add product modal
     function showAddProductModal() {
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk menambah produk.");
+        return;
+      }
       addProductForm.reset();
       previewImage.src = "";
       previewImage.classList.add("hidden");
@@ -1736,6 +1871,10 @@
     // Handle add product form submit
     addProductForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (currentUser.role !== "Master") {
+        alert("Anda tidak memiliki izin untuk menambah produk.");
+        return;
+      }
       const name = addProductForm["product-name"].value.trim();
       const category = addProductForm["product-category"].value.trim();
       const price = parseInt(addProductForm["product-price"].value);
@@ -1783,8 +1922,6 @@
       };
       reader.readAsDataURL(file);
     });
-
-    // Add product button handlers (already handled above)
 
     // Order modal elements
     const orderModal = document.getElementById("order-modal");
@@ -1865,6 +2002,10 @@
 
     // Show modal
     function showOrderModal() {
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk membuat pesanan.");
+        return;
+      }
       populateOrderFormSelects();
       orderModal.classList.remove("hidden");
     }
@@ -1915,6 +2056,10 @@
     // Handle order form submit
     orderForm.addEventListener("submit", (e) => {
       e.preventDefault();
+      if (currentUser.role === "User") {
+        alert("Anda tidak memiliki izin untuk membuat pesanan.");
+        return;
+      }
       const customerName = orderCustomerSelect.value;
       const productId = parseInt(orderProductSelect.value);
       const quantity = parseInt(orderQuantityInput.value);
